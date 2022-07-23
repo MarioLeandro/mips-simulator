@@ -1,0 +1,6 @@
+[{
+    "instruction": "add",
+    "type": "R",
+    "opcode": "000000",
+    "function": "100000"
+}]
