@@ -1,6 +1,250 @@
-[{
+[
+{
     "instruction": "add",
     "type": "R",
     "opcode": "000000",
     "function": "100000"
-}]
+},
+{
+    "instruction": "addi",
+    "type": "I",
+    "opcode": "001000",
+    "function": null
+},
+{
+    "instruction": "addiu",
+    "type": "I",
+    "opcode": "001001",
+    "function": null
+}
+,
+{
+    "instruction": "addu",
+    "type": "R",
+    "opcode": "000000",
+    "function": "100001"
+},
+{
+    "instruction": "and",
+    "type": "R",
+    "opcode": "000000",
+    "function": "100100"
+},
+{
+    "instruction": "andi",
+    "type": "I",
+    "opcode": "001100",
+    "function": null
+},
+{
+    "instruction": "bgtz",
+    "type": "I",
+    "opcode": "000111",
+    "function": null
+},
+{
+    "instruction": "beq",
+    "type": "I",
+    "opcode": "000100",
+    "function": null
+},
+{
+    "instruction": "bltz",
+    "type": "I",
+    "opcode": "000001",
+    "function": null
+},
+{
+    "instruction": "blez",
+    "type": "I",
+    "opcode": "000101",
+    "function": null
+},
+{
+    "instruction": "div",
+    "type": "R",
+    "opcode": "000000",
+    "function": "011010"
+},
+{
+    "instruction": "divu",
+    "type": "R",
+    "opcode": "000000",
+    "function": "011011"
+},
+{
+    "instruction": "j",
+    "type": "J",
+    "opcode": "000010",
+    "function": null
+},
+{
+    "instruction": "jal",
+    "type": "J",
+    "opcode": "000011",
+    "function": null
+},
+{
+    "instruction": "jr",
+    "type": "R",
+    "opcode": "000000",
+    "function": "001000"
+},
+{
+    "instruction": "lb",
+    "type": "I",
+    "opcode": "100000",
+    "function": null
+},
+{
+    "instruction": "lbu",
+    "type": "I",
+    "opcode": "100100",
+    "function": null
+},
+{
+    "instruction": "lui",
+    "type": "I",
+    "opcode": "001111",
+    "function": null
+},
+{
+    "instruction": "lw",
+    "type": "I",
+    "opcode": "100011",
+    "function": null
+},
+{
+    "instruction": "mfhi",
+    "type": "R",
+    "opcode": "000000",
+    "function": "010000"
+},
+{
+    "instruction": "mflo",
+    "type": "R",
+    "opcode": "000000",
+    "function": "010010"
+},
+{
+    "instruction": "mult",
+    "type": "R",
+    "opcode": "000000",
+    "function": null
+},
+{
+    "instruction": "multu",
+    "type": "R",
+    "opcode": "000000",
+    "function": "011001"
+},
+{
+    "instruction": "nor",
+    "type": "R",
+    "opcode": "000000",
+    "function": "100111"
+},
+{
+    "instruction": "or",
+    "type": "R",
+    "opcode": "000000",
+    "function": "100101"
+},
+{
+    "instruction": "ori",
+    "type": "I",
+    "opcode": "001101",
+    "function": null
+},
+{
+    "instruction": "sb",
+    "type": "I",
+    "opcode": "101000",
+    "function": null
+},
+{
+    "instruction": "sll",
+    "type": "R",
+    "opcode": "000000",
+    "function": "000000"
+},
+{
+    "instruction": "sllv",
+    "type": "R",
+    "opcode": "000000",
+    "function": "000100"
+},
+{
+    "instruction": "slt",
+    "type": "R",
+    "opcode": "000000",
+    "function": "101010"
+},
+{
+    "instruction": "slti",
+    "type": "I",
+    "opcode": "001010",
+    "function": null
+},
+{
+    "instruction": "sra",
+    "type": "R",
+    "opcode": "000000",
+    "function": "000011"
+},
+{
+    "instruction": "srav",
+    "type": "R",
+    "opcode": "000000",
+    "function": "000111"
+},
+{
+    "instruction": "srl",
+    "type": "R",
+    "opcode": "000000",
+    "function": "000010"
+},
+{
+    "instruction": "srlv",
+    "type": "R",
+    "opcode": "000000",
+    "function": "000110"
+},
+{
+    "instruction": "sub",
+    "type": "R",
+    "opcode": "000000",
+    "function": "100010"
+},
+{
+    "instruction": "subu",
+    "type": "R",
+    "opcode": "000000",
+    "function": "100011"
+},
+{
+    "instruction": "sw",
+    "type": "I",
+    "opcode": "101011",
+    "function": null
+},
+{
+    "instruction": "syscall",
+    "type": null,
+    "opcode": "000000",
+    "function": "001100"
+},
+{
+    "instruction": "xor",
+    "type": "R",
+    "opcode": "000000",
+    "function": "100110"
+},
+{
+    "instruction": "xori",
+    "type": "I",
+    "opcode": "001110",
+    "function": null
+}
+
+]
