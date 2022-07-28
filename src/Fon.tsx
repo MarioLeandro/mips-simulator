@@ -20,6 +20,7 @@ import {
 } from "@chakra-ui/react";
 import { AttachmentIcon, MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { useDropzone } from "react-dropzone";
+import ModalChakra from "./components/ModalChakra";
 
 function Fon() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -85,6 +86,8 @@ function Fon() {
   return (
     <>
       <Flex w="100%" align={"center"} justify={"flex-end"}>
+
+        <ModalChakra/>
         <IconButton
           mr={4}
           mt={4}
