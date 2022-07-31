@@ -21,8 +21,9 @@ import {
 import { AttachmentIcon, MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { useDropzone } from "react-dropzone";
 import ModalChakra from "./components/ModalChakra";
+import { getInstruction } from "./utils/converter";
 
-function Fon() {
+function Simulator() {
   const { colorMode, toggleColorMode } = useColorMode();
 
   const [file, setFile] = useState<any>(null);
@@ -41,34 +42,11 @@ function Fon() {
 
   const Instructions = Data;
 
-  function getInstruction() {
-    var hexString = "02114020";
+  function convert() {
+    var hexString = "0802FFFF";
     var binString = hexToBinary(hexString);
-    console.log(bin.decimal("001"));
-    var instruction = Instructions.find((instruction) => {
-      if (binString.slice(0, 6) === "000000") {
-        return (
-          instruction.opcode === binString.slice(0, 6) &&
-          instruction.function === binString.slice(-6)
-        );
-      }
-    });
 
-    /* console.log(
-      `${instruction?.instruction} $${bin.decimal(
-        binString.slice(16, 21)
-      )} $${bin.decimal(binString.slice(6, 11))} $${bin.decimal(
-        binString.slice(11, 16)
-      )}`
-    ); */
-
-    setInstruction(
-      `${instruction?.instruction} $${bin.decimal(
-        binString.slice(16, 21)
-      )} $${bin.decimal(binString.slice(6, 11))} $${bin.decimal(
-        binString.slice(11, 16)
-      )}`
-    );
+    setInstruction(getInstruction(binString));
   }
 
   useEffect(() => {
@@ -80,14 +58,13 @@ function Fon() {
     fr.onload = () => {
       console.log(JSON.parse(fr.result as string));
     };
-    getInstruction();
+    convert();
   }, [file]);
 
   return (
     <>
       <Flex w="100%" align={"center"} justify={"flex-end"}>
-
-        <ModalChakra/>
+        <ModalChakra />
         <IconButton
           mr={4}
           mt={4}
@@ -163,4 +140,4 @@ function Fon() {
   );
 }
 
-export default Fon;
+export default Simulator;
