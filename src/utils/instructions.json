@@ -130,7 +130,7 @@
     "instruction": "mult",
     "type": "R",
     "opcode": "000000",
-    "function": null
+    "function": "011000"
 },
 {
     "instruction": "multu",

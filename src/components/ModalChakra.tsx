@@ -63,8 +63,8 @@ function ModalChakra() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {instructions.map((instruction) => (
-                    <Tr>
+                  {instructions.map((instruction, index) => (
+                    <Tr key={index}>
                       <Td>{instruction.instruction}</Td>
                       <Td>{instruction.type}</Td>
                       <Td>{instruction.opcode}</Td>

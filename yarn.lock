@@ -5345,6 +5345,11 @@ get-package-type@^0.1.0:
   resolved "https://registry.yarnpkg.com/get-package-type/-/get-package-type-0.1.0.tgz#8de2d803cff44df3bc6c456e6668b36c3926e11a"
   integrity sha512-pjzuKtY64GYfWizNAJ0fr9VqttZkNiK2iS430LtIHzjBEr6bX8Am2zm4sW4Ro5wjWW5cAlRL1qAMTcXbjNAO2Q==
 
+get-signed-32-bit-int@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/get-signed-32-bit-int/-/get-signed-32-bit-int-1.0.0.tgz#c83d5016ffa4358706a8c9410304dff9c9c316d7"
+  integrity sha512-WTNGEECeH0ALRAAyA23JeNz/UIrp3RBkDrYw9C2XEyHopi1ZXuy7lTzDLWPY8FNiZ62fWTOkxms5UMd+CeB4hw==
+
 get-stream@^6.0.0:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/get-stream/-/get-stream-6.0.1.tgz#a262d8eef67aced57c2852ad6167526a43cbf7b7"

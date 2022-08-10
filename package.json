@@ -16,6 +16,7 @@
     "@types/react-dom": "^18.0.0",
     "binary-to-decimal": "^1.0.9",
     "framer-motion": "^6.5.1",
+    "get-signed-32-bit-int": "^1.0.0",
     "hex-to-binary": "^1.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
