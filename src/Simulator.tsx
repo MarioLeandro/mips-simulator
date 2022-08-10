@@ -1086,9 +1086,28 @@ function Simulator() {
     }
   }, [texts]);
 
+  function jsonDownload() {
+    var json = JSON.stringify(instruction, null, 2)
+    var blob = new Blob([json], {type: "application/json"})
+    var url = URL.createObjectURL(blob)
+    var a = document.createElement("a")
+    a.href = url
+    a.download = "Mario_Luan_Lucas.MIPSSimulator.output.json"
+    a.click()
+  }
+
   return (
     <>
       <Flex w="100%" align={"center"} justify={"flex-end"}>
+        <Button
+        mr={4}
+        mt={4}
+        bg={"inherit"}
+        variant="outline"
+        borderColor={"gray.600"}
+        onClick={jsonDownload}
+        >Download</Button>
+
         <ModalChakra />
         <IconButton
           mr={4}
