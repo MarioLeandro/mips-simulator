@@ -379,6 +379,27 @@ export function getInstruction(binString: string) {
         dest: "$" + bin.decimal(binString.slice(11, 16)),
       },
     };
+  } else if (instruction?.instruction === "lw") {
+    console.log(
+      `${instruction?.instruction} $${bin.decimal(
+        binString.slice(11, 16)
+      )} ${bin.decimal(binString.slice(16, binString.length))}($${bin.decimal(
+        binString.slice(6, 11)
+      )})`
+    );
+    return {
+      instruction: instruction?.instruction,
+      text: `${instruction?.instruction} $${bin.decimal(
+        binString.slice(11, 16)
+      )}  ${bin.decimal(binString.slice(16, binString.length))}($${bin.decimal(
+        binString.slice(6, 11)
+      )})`,
+      regs: {
+        src1: "$" + bin.decimal(binString.slice(6, 11)),
+        src2: String(bin.decimal(binString.slice(16, binString.length))),
+        dest: "$" + bin.decimal(binString.slice(11, 16)),
+      },
+    };
   } else if (instruction?.instruction === "addi") {
     return {
       instruction: instruction?.instruction,

@@ -87,6 +87,7 @@ function Simulator() {
     $hi: 0,
     $lo: 0,
   });
+  const [mem, setMem] = useState<any>({});
 
   let nonZeroRegs = {};
   //const Instructions = Data;
@@ -1022,6 +1023,40 @@ function Simulator() {
             stdout: overflow,
           });
         }
+      } else if (value?.instruction === "lw") {
+        let inRegs: any = {};
+        let overflow = "";
+        if (value.regs) {
+          setRegs({
+            ...regs,
+            [value.regs.dest]: Number(
+              mem[String(regs[value.regs.src1] + Number(value.regs?.src2))]
+            ),
+          });
+          inRegs = {
+            ...regs,
+            [value.regs.dest]: Number(
+              mem[String(regs[value.regs.src1] + Number(value.regs?.src2))]
+            ),
+          };
+          let nzr = {};
+          Object.keys(inRegs).forEach((key: string) => {
+            if (inRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: inRegs[key] };
+              console.log(inRegs[key]);
+              console.log(key);
+              console.log(nzr);
+            }
+          });
+
+          instructions.push({
+            hex: "0x" + hexString,
+            instruction: value.instruction,
+            text: value.text,
+            regs: nzr,
+            stdout: overflow,
+          });
+        }
       } else if (value?.instruction === "addi") {
         let inRegs: any = {};
         let overflow = "";
@@ -1082,31 +1117,35 @@ function Simulator() {
 
   useEffect(() => {
     if (texts) {
+      console.log(texts.text);
       setInstruction(convert(texts.text));
+      setMem(texts.data);
     }
   }, [texts]);
 
   function jsonDownload() {
-    var json = JSON.stringify(instruction, null, 2)
-    var blob = new Blob([json], {type: "application/json"})
-    var url = URL.createObjectURL(blob)
-    var a = document.createElement("a")
-    a.href = url
-    a.download = "Mario_Luan_Lucas.MIPSSimulator.output.json"
-    a.click()
+    var json = JSON.stringify(instruction, null, 2);
+    var blob = new Blob([json], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "Mario_Luan_Lucas.MIPSSimulator.output.json";
+    a.click();
   }
 
   return (
     <>
       <Flex w="100%" align={"center"} justify={"flex-end"}>
         <Button
-        mr={4}
-        mt={4}
-        bg={"inherit"}
-        variant="outline"
-        borderColor={"gray.600"}
-        onClick={jsonDownload}
-        >Download</Button>
+          mr={4}
+          mt={4}
+          bg={"inherit"}
+          variant="outline"
+          borderColor={"gray.600"}
+          onClick={jsonDownload}
+        >
+          Download
+        </Button>
 
         <ModalChakra />
         <IconButton
