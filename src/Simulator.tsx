@@ -1454,9 +1454,9 @@ function Simulator() {
             $31: localRegs.$pc,
             $pc: (localRegs.$pc + Number(value.regs.src2)) << 2,
           }; */
-          if (value.regs.src2 === "0") {
+          if (localRegs.$2 === 1) {
             overflow = String(localRegs.$4);
-          } else if (value.regs.src2 === "3") {
+          } else if (localRegs.$2 === 5) {
             let text: any = "";
             text = prompt("");
             while (!/^[0-9]+$/.test(text)) {
@@ -1465,7 +1465,7 @@ function Simulator() {
             }
             localRegs = {
               ...localRegs,
-              $4: Number(text),
+              $2: Number(text),
             };
           }
 

@@ -564,9 +564,7 @@ export function getInstruction(binString: string) {
   } else if (instruction?.instruction === "syscall") {
     return {
       instruction: instruction?.instruction,
-      text: `${instruction?.instruction} ${bin.decimal(
-        binString.slice(6, 26)
-      )}`,
+      text: `${instruction?.instruction}`,
       regs: {
         src1: "$" + bin.decimal(binString.slice(6, 11)),
         src2: String(bin.decimal(binString.slice(6, 26))),
