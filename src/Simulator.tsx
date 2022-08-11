@@ -3,18 +3,12 @@ import * as hexToBinary from "hex-to-binary";
 import * as bin from "binary-to-decimal";
 import getSigned32BitInt from "get-signed-32-bit-int";
 
-import Data from "./utils/instructions.json";
 import {
-  Box,
   Button,
-  ChakraProvider,
-  extendTheme,
   Flex,
-  Heading,
   useColorMode,
   useColorModeValue,
   Text,
-  HStack,
   Divider,
   Center,
   IconButton,
@@ -34,7 +28,7 @@ type Instruction = {
 };
 
 function Simulator() {
-  const { colorMode, toggleColorMode } = useColorMode();
+  const { toggleColorMode } = useColorMode();
 
   const [file, setFile] = useState<any>(null);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -79,1027 +73,1371 @@ function Simulator() {
     $25: 0,
     $26: 0,
     $27: 0,
-    $28: 0,
-    $29: 0,
+    $28: 268468224,
+    $29: 2147479548,
     $30: 0,
     $31: 0,
-    $pc: 0,
+    $pc: 4194304,
     $hi: 0,
     $lo: 0,
   });
   const [mem, setMem] = useState<any>({});
 
-  let nonZeroRegs = {};
-  //const Instructions = Data;
-
   function convert(stringToConvert: string[]) {
     const instructions: any = [];
-    stringToConvert.forEach((element) => {
+    let localRegs = { ...regs };
+    let localMem = { ...mem };
+    stringToConvert.forEach((element, index) => {
       var hexString = element.slice(2, element.length);
       var binString = hexToBinary(hexString);
-
+      var decString = bin.decimal(binString);
       const value = getInstruction(binString);
 
+      if (index === 0) {
+        localMem = { ...localMem, ["4194304"]: String(decString) };
+        localRegs = { ...localRegs, $pc: Number(4194304) };
+      } else {
+        localMem = {
+          ...localMem,
+          [String(4194300 + (index + 1) * 4)]: String(decString),
+        };
+        localRegs = { ...localRegs, $pc: 4194300 + (index + 1) * 4 };
+      }
+      console.log("memoria", localMem);
+      console.log("regs", localRegs);
+
       if (value?.instruction === "add") {
-        let inRegs: any = {};
         let overflow = "";
         let result = 0;
         if (value.regs) {
           if (
-            Number(regs[value.regs.src1]) + Number(regs[value.regs?.src2]) >
+            Number(localRegs[value.regs.src1]) +
+              Number(localRegs[value.regs?.src2]) >
               2147483647 ||
-            Number(regs[value.regs.src1]) + Number(regs[value.regs?.src2]) <
+            Number(localRegs[value.regs.src1]) +
+              Number(localRegs[value.regs?.src2]) <
               -2147483647
           ) {
             overflow = "overflow";
             result = getSigned32BitInt(
-              Number(regs[value.regs.src1]) + Number(regs[value.regs?.src2])
+              Number(localRegs[value.regs.src1]) +
+                Number(localRegs[value.regs?.src2])
             );
           } else {
             result =
-              Number(regs[value.regs.src1]) + Number(regs[value.regs?.src2]);
+              Number(localRegs[value.regs.src1]) +
+              Number(localRegs[value.regs?.src2]);
           }
-          setRegs({
-            ...regs,
-            [value.regs.dest]: result,
-          });
-          inRegs = {
-            ...regs,
+
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]: result,
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "sub") {
-        let inRegs: any = {};
         let overflow = "";
         let result = 0;
         if (value.regs) {
           if (
-            Number(regs[value.regs.src1]) - Number(regs[value.regs?.src2]) >
+            Number(localRegs[value.regs.src1]) -
+              Number(localRegs[value.regs?.src2]) >
               2147483647 ||
-            Number(regs[value.regs.src1]) - Number(regs[value.regs?.src2]) <
+            Number(localRegs[value.regs.src1]) -
+              Number(localRegs[value.regs?.src2]) <
               -2147483647
           ) {
             overflow = "overflow";
             result = getSigned32BitInt(
-              Number(regs[value.regs.src1]) - Number(regs[value.regs?.src2])
+              Number(localRegs[value.regs.src1]) -
+                Number(localRegs[value.regs?.src2])
             );
           } else {
             result =
-              Number(regs[value.regs.src1]) - Number(regs[value.regs?.src2]);
+              Number(localRegs[value.regs.src1]) -
+              Number(localRegs[value.regs?.src2]);
           }
-          setRegs({
-            ...regs,
-            [value.regs.dest]: result,
-          });
-          inRegs = {
-            ...regs,
+
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]: result,
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "slt") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) < Number(regs[value.regs?.src2])
-                ? 1
-                : 0,
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) < Number(regs[value.regs?.src2])
+              Number(localRegs[value.regs.src1]) <
+              Number(localRegs[value.regs?.src2])
                 ? 1
                 : 0,
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "and") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) & Number(regs[value.regs?.src2]),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) & Number(regs[value.regs?.src2]),
+              Number(localRegs[value.regs.src1]) &
+              Number(localRegs[value.regs?.src2]),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "or") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) | Number(regs[value.regs?.src2]),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) | Number(regs[value.regs?.src2]),
+              Number(localRegs[value.regs.src1]) |
+              Number(localRegs[value.regs?.src2]),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "xor") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) ^ Number(regs[value.regs?.src2]),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) ^ Number(regs[value.regs?.src2]),
+              Number(localRegs[value.regs.src1]) ^
+              Number(localRegs[value.regs?.src2]),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "nor") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]: ~(
-              Number(regs[value.regs.src1]) | Number(regs[value.regs?.src2])
-            ),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]: ~(
-              Number(regs[value.regs.src1]) | Number(regs[value.regs?.src2])
+              Number(localRegs[value.regs.src1]) |
+              Number(localRegs[value.regs?.src2])
             ),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "mfhi") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
-            [value.regs.dest]: regs.hi,
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]: regs.hi,
+          localRegs = {
+            ...localRegs,
+            [value.regs.dest]: localRegs.hi,
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "mflo") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
           setRegs({
-            ...regs,
-            [value.regs.dest]: regs.lo,
+            ...localRegs,
+            [value.regs.dest]: localRegs.lo,
           });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]: regs.lo,
+          localRegs = {
+            ...localRegs,
+            [value.regs.dest]: localRegs.lo,
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "addu") {
-        let inRegs: any = {};
         let overflow = "";
         let result = 0;
         if (value.regs) {
           if (
-            Number(regs[value.regs.src1]) + Number(regs[value.regs?.src2]) >
+            Number(localRegs[value.regs.src1]) +
+              Number(localRegs[value.regs?.src2]) >
               2147483647 ||
-            Number(regs[value.regs.src1]) + Number(regs[value.regs?.src2]) <
+            Number(localRegs[value.regs.src1]) +
+              Number(localRegs[value.regs?.src2]) <
               -2147483647
           ) {
             result = getSigned32BitInt(
-              Number(regs[value.regs.src1]) + Number(regs[value.regs?.src2])
+              Number(localRegs[value.regs.src1]) +
+                Number(localRegs[value.regs?.src2])
             );
           } else {
             result =
-              Number(regs[value.regs.src1]) + Number(regs[value.regs?.src2]);
+              Number(localRegs[value.regs.src1]) +
+              Number(localRegs[value.regs?.src2]);
           }
-          setRegs({
-            ...regs,
-            [value.regs.dest]: result,
-          });
-          inRegs = {
-            ...regs,
+
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]: result,
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "subu") {
-        let inRegs: any = {};
         let overflow = "";
         let result = 0;
         if (value.regs) {
           if (
-            Number(regs[value.regs.src1]) - Number(regs[value.regs?.src2]) >
+            Number(localRegs[value.regs.src1]) -
+              Number(localRegs[value.regs?.src2]) >
               2147483647 ||
-            Number(regs[value.regs.src1]) - Number(regs[value.regs?.src2]) <
+            Number(localRegs[value.regs.src1]) -
+              Number(localRegs[value.regs?.src2]) <
               -2147483647
           ) {
             result = getSigned32BitInt(
-              Number(regs[value.regs.src1]) - Number(regs[value.regs?.src2])
+              Number(localRegs[value.regs.src1]) -
+                Number(localRegs[value.regs?.src2])
             );
           } else {
             result =
-              Number(regs[value.regs.src1]) - Number(regs[value.regs?.src2]);
+              Number(localRegs[value.regs.src1]) -
+              Number(localRegs[value.regs?.src2]);
           }
-          setRegs({
-            ...regs,
-            [value.regs.dest]: result,
-          });
-          inRegs = {
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]: result,
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "mult") {
         const mult = (
-          Number(regs[value.regs.src1]) - Number(regs[value.regs?.src2])
+          Number(localRegs[value.regs.src1]) *
+          Number(localRegs[value.regs?.src2])
         )
           .toString(2)
           .padStart(64, "0");
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
-            hi: Number(bin.decimal(mult.slice(0, 31))),
-            lo: Number(bin.decimal(mult.slice(31, mult.length))),
-          });
-          inRegs = {
-            ...regs,
+          localRegs = {
+            ...localRegs,
             hi: Number(bin.decimal(mult.slice(0, 31))),
             lo: Number(bin.decimal(mult.slice(31, mult.length))),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "multu") {
         const mult = (
-          Number(regs[value.regs.src1]) - Number(regs[value.regs?.src2])
+          Number(localRegs[value.regs.src1]) *
+          Number(localRegs[value.regs?.src2])
         )
           .toString(2)
           .padStart(64, "0");
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
-            hi: Number(bin.decimal(mult.slice(0, 31))),
-            lo: Number(bin.decimal(mult.slice(31, mult.length))),
-          });
-          inRegs = {
-            ...regs,
+          localRegs = {
+            ...localRegs,
             hi: Number(bin.decimal(mult.slice(0, 31))),
             lo: Number(bin.decimal(mult.slice(31, mult.length))),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "div") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
-            hi: Number(regs[value.regs.src1]) % Number(regs[value.regs.src2]),
-            lo: Number(regs[value.regs.src1]) / Number(regs[value.regs.src2]),
-          });
-          inRegs = {
-            ...regs,
-            hi: Number(regs[value.regs.src1]) % Number(regs[value.regs.src2]),
-            lo: Number(regs[value.regs.src1]) / Number(regs[value.regs.src2]),
+          localRegs = {
+            ...localRegs,
+            hi:
+              Number(localRegs[value.regs.src1]) %
+              Number(localRegs[value.regs.src2]),
+            lo:
+              Number(localRegs[value.regs.src1]) /
+              Number(localRegs[value.regs.src2]),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "divu") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
-            hi: Number(regs[value.regs.src1]) % Number(regs[value.regs.src2]),
-            lo: Number(regs[value.regs.src1]) / Number(regs[value.regs.src2]),
-          });
-          inRegs = {
-            ...regs,
-            hi: Number(regs[value.regs.src1]) % Number(regs[value.regs.src2]),
-            lo: Number(regs[value.regs.src1]) / Number(regs[value.regs.src2]),
+          localRegs = {
+            ...localRegs,
+            hi:
+              Number(localRegs[value.regs.src1]) %
+              Number(localRegs[value.regs.src2]),
+            lo:
+              Number(localRegs[value.regs.src1]) /
+              Number(localRegs[value.regs.src2]),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "sll") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) << Number(value.regs.src2),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) << Number(value.regs.src2),
+              Number(localRegs[value.regs.src1]) << Number(value.regs.src2),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "srl") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) >>> Number(value.regs.src2),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) >>> Number(value.regs.src2),
+              Number(localRegs[value.regs.src1]) >>> Number(value.regs.src2),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "sra") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) >> Number(value.regs.src2),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) >> Number(value.regs.src2),
+              Number(localRegs[value.regs.src1]) >> Number(value.regs.src2),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "sllv") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) << Number(regs[value.regs.src2]),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) << Number(regs[value.regs.src2]),
+              Number(localRegs[value.regs.src1]) <<
+              Number(localRegs[value.regs.src2]),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "srlv") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) >>> Number(regs[value.regs.src2]),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) >>> Number(regs[value.regs.src2]),
+              Number(localRegs[value.regs.src1]) >>>
+              Number(localRegs[value.regs.src2]),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "srav") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) >> Number(regs[value.regs.src2]),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) >> Number(regs[value.regs.src2]),
+              Number(localRegs[value.regs.src1]) >>
+              Number(localRegs[value.regs.src2]),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "jr") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
-            pc: Number(regs[value.regs.src1]),
-          });
-          inRegs = {
-            ...regs,
-            pc: Number(regs[value.regs.src1]),
+          localRegs = {
+            ...localRegs,
+            pc: Number(localRegs[value.regs.src1]),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "lui") {
         const im = Number(value.regs.src2).toString(2).padStart(16, "0");
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
-            [value.regs.dest]: Number(bin.decimal(im + "0".padStart(16, "0"))),
-          });
-          inRegs = {
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]: Number(bin.decimal(im + "0".padStart(16, "0"))),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "slti") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) < Number(value.regs?.src2) ? 1 : 0,
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) < Number(value.regs?.src2) ? 1 : 0,
+              Number(localRegs[value.regs.src1]) < Number(value.regs?.src2)
+                ? 1
+                : 0,
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "andi") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) & Number(value.regs?.src2),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) & Number(value.regs?.src2),
+              Number(localRegs[value.regs.src1]) & Number(value.regs?.src2),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "ori") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) | Number(value.regs?.src2),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) | Number(value.regs?.src2),
+              Number(localRegs[value.regs.src1]) | Number(value.regs?.src2),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "xori") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]:
-              Number(regs[value.regs.src1]) ^ Number(value.regs?.src2),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]:
-              Number(regs[value.regs.src1]) ^ Number(value.regs?.src2),
+              Number(localRegs[value.regs.src1]) ^ Number(value.regs?.src2),
           };
+
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       } else if (value?.instruction === "lw") {
-        let inRegs: any = {};
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...regs,
+          console.log(
+            String(localRegs[value.regs.src1] + Number(value.regs?.src2))
+          );
+          if (
+            !localMem[
+              String(localRegs[value.regs.src1] + Number(value.regs?.src2))
+            ]
+          ) {
+            localMem = {
+              ...localMem,
+              [String(localRegs[value.regs.src1] + Number(value.regs?.src2))]:
+                "0",
+            };
+          }
+
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]: Number(
-              mem[String(regs[value.regs.src1] + Number(value.regs?.src2))]
-            ),
-          });
-          inRegs = {
-            ...regs,
-            [value.regs.dest]: Number(
-              mem[String(regs[value.regs.src1] + Number(value.regs?.src2))]
+              localMem[
+                String(localRegs[value.regs.src1] + Number(value.regs?.src2))
+              ]
             ),
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
-      } else if (value?.instruction === "addi") {
-        let inRegs: any = {};
+      } else if (value?.instruction === "sw") {
+        let overflow = "";
+        if (value.regs) {
+          if (
+            !localMem[
+              String(localRegs[value.regs.src1] + Number(value.regs?.src2))
+            ]
+          ) {
+            localMem = {
+              ...localMem,
+              [String(localRegs[value.regs.src1] + Number(value.regs?.src2))]:
+                "0",
+            };
+          }
+
+          localMem = {
+            ...localMem,
+            [String(localRegs[value.regs.src1] + Number(value.regs?.src2))]:
+              String(localRegs[value.regs.dest]),
+          };
+
+          let nzr = {};
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
+            }
+          });
+
+          instructions.push({
+            hex: "0x" + hexString,
+
+            text: value.text,
+            regs: nzr,
+            mem: nzrm,
+            stdout: overflow,
+          });
+        }
+      } else if (value?.instruction === "bltz") {
+        let overflow = "";
+        if (value.regs) {
+          localRegs = {
+            ...localRegs,
+            $pc:
+              localRegs[value.regs.src1] < 0
+                ? (localRegs.$pc + Number(value.regs.src2)) << 2
+                : localRegs.$pc,
+          };
+
+          let nzr = {};
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
+            }
+          });
+
+          instructions.push({
+            hex: "0x" + hexString,
+
+            text: value.text,
+            regs: nzr,
+            mem: nzrm,
+            stdout: overflow,
+          });
+        }
+      } else if (value?.instruction === "beq") {
+        let overflow = "";
+        if (value.regs) {
+          localRegs = {
+            ...localRegs,
+            $pc:
+              localRegs[value.regs.src1] === localRegs[value.regs.dest]
+                ? (localRegs.$pc + Number(value.regs.src2)) << 2
+                : localRegs.$pc,
+          };
+
+          let nzr = {};
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
+            }
+          });
+
+          instructions.push({
+            hex: "0x" + hexString,
+
+            text: value.text,
+            regs: nzr,
+            mem: nzrm,
+            stdout: overflow,
+          });
+        }
+      } else if (value?.instruction === "bne") {
+        let overflow = "";
+        if (value.regs) {
+          localRegs = {
+            ...localRegs,
+            $pc:
+              localRegs[value.regs.src1] !== localRegs[value.regs.dest]
+                ? (localRegs.$pc + Number(value.regs.src2)) << 2
+                : localRegs.$pc,
+          };
+
+          let nzr = {};
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
+            }
+          });
+
+          instructions.push({
+            hex: "0x" + hexString,
+
+            text: value.text,
+            regs: nzr,
+            mem: nzrm,
+            stdout: overflow,
+          });
+        }
+      } else if (value?.instruction === "addiu") {
         let overflow = "";
         let result = 0;
         if (value.regs) {
           if (
-            regs[value.regs.src1] + Number(value.regs?.src2) > 2147483647 ||
-            regs[value.regs.src1] + Number(value.regs?.src2) < -2147483647
+            localRegs[value.regs.src1] + Number(value.regs?.src2) >
+              2147483647 ||
+            localRegs[value.regs.src1] + Number(value.regs?.src2) < -2147483647
           ) {
             result = getSigned32BitInt(
-              regs[value.regs.src1] + Number(value.regs?.src2)
+              localRegs[value.regs.src1] + Number(value.regs?.src2)
             );
           } else {
-            result = regs[value.regs.src1] + Number(value.regs?.src2);
+            result = localRegs[value.regs.src1] + Number(value.regs?.src2);
           }
-          setRegs({
-            ...regs,
-            [value.regs.dest]: result,
-          });
-          inRegs = {
-            ...regs,
+
+          localRegs = {
+            ...localRegs,
             [value.regs.dest]: result,
           };
           let nzr = {};
-          Object.keys(inRegs).forEach((key: string) => {
-            if (inRegs[key] !== 0) {
-              nzr = { ...nzr, [key]: inRegs[key] };
-              console.log(inRegs[key]);
-              console.log(key);
-              console.log(nzr);
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
             }
           });
 
           instructions.push({
             hex: "0x" + hexString,
-            instruction: value.instruction,
+
             text: value.text,
             regs: nzr,
+            mem: nzrm,
+            stdout: overflow,
+          });
+        }
+      } else if (value?.instruction === "lb") {
+        let overflow = "";
+        let result = 0;
+        if (value.regs) {
+          if (
+            !localMem[
+              String(localRegs[value.regs.src1] + Number(value.regs.src2))
+            ]
+          ) {
+            localMem = {
+              ...localMem,
+              [String(localRegs[value.regs.src1] + Number(value.regs.src2))]:
+                "0",
+            };
+          }
+
+          localRegs = {
+            ...localRegs,
+            [value.regs.dest]: Number(
+              localMem[
+                String(localRegs[value.regs.src1] + Number(value.regs.src2))
+              ]
+            ),
+          };
+          let nzr = {};
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
+            }
+          });
+
+          instructions.push({
+            hex: "0x" + hexString,
+
+            text: value.text,
+            regs: nzr,
+            mem: nzrm,
+            stdout: overflow,
+          });
+        }
+      } else if (value?.instruction === "lbu") {
+        let overflow = "";
+        let result = 0;
+        if (value.regs) {
+          if (
+            !localMem[
+              String(localRegs[value.regs.src1] + Number(value.regs.src2))
+            ]
+          ) {
+            localMem = {
+              ...localMem,
+              [String(localRegs[value.regs.src1] + Number(value.regs.src2))]:
+                "0",
+            };
+          }
+
+          localRegs = {
+            ...localRegs,
+            [value.regs.dest]: Number(
+              localMem[
+                String(localRegs[value.regs.src1] + Number(value.regs.src2))
+              ]
+            ),
+          };
+          let nzr = {};
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
+            }
+          });
+
+          instructions.push({
+            hex: "0x" + hexString,
+
+            text: value.text,
+            regs: nzr,
+            mem: nzrm,
+            stdout: overflow,
+          });
+        }
+      } else if (value?.instruction === "sb") {
+        let overflow = "";
+        let result = 0;
+        if (value.regs) {
+          if (
+            !localMem[
+              String(localRegs[value.regs.src1] + Number(value.regs.src2))
+            ]
+          ) {
+            localMem = {
+              ...localMem,
+              [String(localRegs[value.regs.src1] + Number(value.regs.src2))]:
+                "0",
+            };
+          }
+
+          localMem = {
+            ...localMem,
+            [String(Number(value.regs.src2) + localRegs[value.regs.src1])]:
+              String(255 & localRegs[value.regs.dest]),
+          };
+
+          let nzr = {};
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
+            }
+          });
+
+          instructions.push({
+            hex: "0x" + hexString,
+
+            text: value.text,
+            regs: nzr,
+            mem: nzrm,
+            stdout: overflow,
+          });
+        }
+      } else if (value?.instruction === "addi") {
+        let overflow = "";
+        let result = 0;
+        if (value.regs) {
+          if (
+            localRegs[value.regs.src1] + Number(value.regs?.src2) >
+              2147483647 ||
+            localRegs[value.regs.src1] + Number(value.regs?.src2) < -2147483647
+          ) {
+            result = getSigned32BitInt(
+              localRegs[value.regs.src1] + Number(value.regs?.src2)
+            );
+          } else {
+            result = localRegs[value.regs.src1] + Number(value.regs?.src2);
+          }
+
+          localRegs = {
+            ...localRegs,
+            [value.regs.dest]: result,
+          };
+          let nzr = {};
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
+            }
+          });
+
+          instructions.push({
+            hex: "0x" + hexString,
+
+            text: value.text,
+            regs: nzr,
+            mem: nzrm,
             stdout: overflow,
           });
         }
       }
     });
+    setMem(localMem);
+    setRegs(localRegs);
     return instructions;
   }
 
@@ -1110,7 +1448,9 @@ function Simulator() {
 
     fr.readAsText(file);
     fr.onload = () => {
-      setTexts(JSON.parse(fr.result as string));
+      const value = JSON.parse(fr.result as string);
+      setTexts(value);
+      setMem({ ...value.data, ["4194304"]: "0" });
     };
     //convert();
   }, [file]);
@@ -1119,7 +1459,6 @@ function Simulator() {
     if (texts) {
       console.log(texts.text);
       setInstruction(convert(texts.text));
-      setMem(texts.data);
     }
   }, [texts]);
 

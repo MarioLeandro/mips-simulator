@@ -57,6 +57,12 @@
 {
     "instruction": "blez",
     "type": "I",
+    "opcode": "000110",
+    "function": null
+},
+{
+    "instruction": "bne",
+    "type": "I",
     "opcode": "000101",
     "function": null
 },

@@ -1,4 +1,3 @@
-import * as hexToBinary from "hex-to-binary";
 import * as bin from "binary-to-decimal";
 import Data from "./instructions.json";
 
@@ -380,6 +379,144 @@ export function getInstruction(binString: string) {
       },
     };
   } else if (instruction?.instruction === "lw") {
+    console.log(
+      `${instruction?.instruction} $${bin.decimal(
+        binString.slice(11, 16)
+      )} ${bin.decimal(binString.slice(16, binString.length))}($${bin.decimal(
+        binString.slice(6, 11)
+      )})`
+    );
+    return {
+      instruction: instruction?.instruction,
+      text: `${instruction?.instruction} $${bin.decimal(
+        binString.slice(11, 16)
+      )}  ${bin.decimal(binString.slice(16, binString.length))}($${bin.decimal(
+        binString.slice(6, 11)
+      )})`,
+      regs: {
+        src1: "$" + bin.decimal(binString.slice(6, 11)),
+        src2: String(bin.decimal(binString.slice(16, binString.length))),
+        dest: "$" + bin.decimal(binString.slice(11, 16)),
+      },
+    };
+  } else if (instruction?.instruction === "sw") {
+    console.log(
+      `${instruction?.instruction} $${bin.decimal(
+        binString.slice(11, 16)
+      )} ${bin.decimal(binString.slice(16, binString.length))}($${bin.decimal(
+        binString.slice(6, 11)
+      )})`
+    );
+    return {
+      instruction: instruction?.instruction,
+      text: `${instruction?.instruction} $${bin.decimal(
+        binString.slice(11, 16)
+      )}  ${bin.decimal(binString.slice(16, binString.length))}($${bin.decimal(
+        binString.slice(6, 11)
+      )})`,
+      regs: {
+        src1: "$" + bin.decimal(binString.slice(6, 11)),
+        src2: String(bin.decimal(binString.slice(16, binString.length))),
+        dest: "$" + bin.decimal(binString.slice(11, 16)),
+      },
+    };
+  } else if (instruction?.instruction === "bltz") {
+    return {
+      instruction: instruction?.instruction,
+      text: `${instruction?.instruction} $${bin.decimal(
+        binString.slice(6, 11)
+      )} ${bin.decimal(binString.slice(16, binString.length))}`,
+      regs: {
+        src1: "$" + bin.decimal(binString.slice(6, 11)),
+        src2: String(bin.decimal(binString.slice(16, binString.length))),
+        dest: "$" + bin.decimal(binString.slice(11, 16)),
+      },
+    };
+  } else if (instruction?.instruction === "beq") {
+    return {
+      instruction: instruction?.instruction,
+      text: `${instruction?.instruction} $${bin.decimal(
+        binString.slice(6, 11)
+      )} $${bin.decimal(binString.slice(11, 16))} ${bin.decimal(
+        binString.slice(16, binString.length)
+      )}`,
+      regs: {
+        src1: "$" + bin.decimal(binString.slice(6, 11)),
+        src2: String(bin.decimal(binString.slice(16, binString.length))),
+        dest: "$" + bin.decimal(binString.slice(11, 16)),
+      },
+    };
+  } else if (instruction?.instruction === "bne") {
+    return {
+      instruction: instruction?.instruction,
+      text: `${instruction?.instruction} $${bin.decimal(
+        binString.slice(6, 11)
+      )} $${bin.decimal(binString.slice(11, 16))} ${bin.decimal(
+        binString.slice(16, binString.length)
+      )}`,
+      regs: {
+        src1: "$" + bin.decimal(binString.slice(6, 11)),
+        src2: String(bin.decimal(binString.slice(16, binString.length))),
+        dest: "$" + bin.decimal(binString.slice(11, 16)),
+      },
+    };
+  } else if (instruction?.instruction === "addiu") {
+    return {
+      instruction: instruction?.instruction,
+      text: `${instruction?.instruction} $${bin.decimal(
+        binString.slice(11, 16)
+      )}  $${bin.decimal(binString.slice(6, 11))}  ${bin.decimal(
+        binString.slice(16, binString.length)
+      )}`,
+      regs: {
+        src1: "$" + bin.decimal(binString.slice(6, 11)),
+        src2: String(bin.decimal(binString.slice(16, binString.length))),
+        dest: "$" + bin.decimal(binString.slice(11, 16)),
+      },
+    };
+  } else if (instruction?.instruction === "lb") {
+    console.log(
+      `${instruction?.instruction} $${bin.decimal(
+        binString.slice(11, 16)
+      )} ${bin.decimal(binString.slice(16, binString.length))}($${bin.decimal(
+        binString.slice(6, 11)
+      )})`
+    );
+    return {
+      instruction: instruction?.instruction,
+      text: `${instruction?.instruction} $${bin.decimal(
+        binString.slice(11, 16)
+      )}  ${bin.decimal(binString.slice(16, binString.length))}($${bin.decimal(
+        binString.slice(6, 11)
+      )})`,
+      regs: {
+        src1: "$" + bin.decimal(binString.slice(6, 11)),
+        src2: String(bin.decimal(binString.slice(16, binString.length))),
+        dest: "$" + bin.decimal(binString.slice(11, 16)),
+      },
+    };
+  } else if (instruction?.instruction === "lbu") {
+    console.log(
+      `${instruction?.instruction} $${bin.decimal(
+        binString.slice(11, 16)
+      )} ${bin.decimal(binString.slice(16, binString.length))}($${bin.decimal(
+        binString.slice(6, 11)
+      )})`
+    );
+    return {
+      instruction: instruction?.instruction,
+      text: `${instruction?.instruction} $${bin.decimal(
+        binString.slice(11, 16)
+      )}  ${bin.decimal(binString.slice(16, binString.length))}($${bin.decimal(
+        binString.slice(6, 11)
+      )})`,
+      regs: {
+        src1: "$" + bin.decimal(binString.slice(6, 11)),
+        src2: String(bin.decimal(binString.slice(16, binString.length))),
+        dest: "$" + bin.decimal(binString.slice(11, 16)),
+      },
+    };
+  } else if (instruction?.instruction === "sb") {
     console.log(
       `${instruction?.instruction} $${bin.decimal(
         binString.slice(11, 16)
