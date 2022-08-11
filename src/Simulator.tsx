@@ -1392,6 +1392,112 @@ function Simulator() {
             stdout: overflow,
           });
         }
+      } else if (value?.instruction === "j") {
+        let overflow = "";
+        if (value.regs) {
+          localRegs = {
+            ...localRegs,
+            $pc: (localRegs.$pc + Number(value.regs.src2)) << 2,
+          };
+
+          let nzr = {};
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
+            }
+          });
+
+          instructions.push({
+            hex: "0x" + hexString,
+
+            text: value.text,
+            regs: nzr,
+            mem: nzrm,
+            stdout: overflow,
+          });
+        }
+      } else if (value?.instruction === "jal") {
+        let overflow = "";
+        if (value.regs) {
+          localRegs = {
+            ...localRegs,
+            $31: localRegs.$pc,
+            $pc: (localRegs.$pc + Number(value.regs.src2)) << 2,
+          };
+
+          let nzr = {};
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
+            }
+          });
+
+          instructions.push({
+            hex: "0x" + hexString,
+
+            text: value.text,
+            regs: nzr,
+            mem: nzrm,
+            stdout: overflow,
+          });
+        }
+      } else if (value?.instruction === "syscall") {
+        let overflow = "";
+        if (value.regs) {
+          /* localRegs = {
+            ...localRegs,
+            $31: localRegs.$pc,
+            $pc: (localRegs.$pc + Number(value.regs.src2)) << 2,
+          }; */
+          if (value.regs.src2 === "0") {
+            overflow = String(localRegs.$4);
+          } else if (value.regs.src2 === "3") {
+            let text: any = "";
+            text = prompt("");
+            while (!/^[0-9]+$/.test(text)) {
+              alert("You did not enter a number.");
+              text = prompt("");
+            }
+            localRegs = {
+              ...localRegs,
+              $4: Number(text),
+            };
+          }
+
+          let nzr = {};
+          Object.keys(localRegs).forEach((key: string) => {
+            if (localRegs[key] !== 0) {
+              nzr = { ...nzr, [key]: localRegs[key] };
+            }
+          });
+          let nzrm = {};
+          Object.keys(localMem).forEach((key: string) => {
+            if (localMem[key] !== "0") {
+              nzrm = { ...nzrm, [key]: localMem[key] };
+            }
+          });
+
+          instructions.push({
+            hex: "0x" + hexString,
+
+            text: value.text,
+            regs: nzr,
+            mem: nzrm,
+            stdout: overflow,
+          });
+        }
       } else if (value?.instruction === "addi") {
         let overflow = "";
         let result = 0;

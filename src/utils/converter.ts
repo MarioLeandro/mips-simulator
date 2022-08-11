@@ -537,6 +537,42 @@ export function getInstruction(binString: string) {
         dest: "$" + bin.decimal(binString.slice(11, 16)),
       },
     };
+  } else if (instruction?.instruction === "j") {
+    return {
+      instruction: instruction?.instruction,
+      text: `${instruction?.instruction} ${bin.decimal(
+        binString.slice(6, binString.length)
+      )}`,
+      regs: {
+        src1: "$" + bin.decimal(binString.slice(6, 11)),
+        src2: String(bin.decimal(binString.slice(6, binString.length))),
+        dest: "$" + bin.decimal(binString.slice(11, 16)),
+      },
+    };
+  } else if (instruction?.instruction === "jal") {
+    return {
+      instruction: instruction?.instruction,
+      text: `${instruction?.instruction} ${bin.decimal(
+        binString.slice(6, binString.length)
+      )}`,
+      regs: {
+        src1: "$" + bin.decimal(binString.slice(6, 11)),
+        src2: String(bin.decimal(binString.slice(6, binString.length))),
+        dest: "$" + bin.decimal(binString.slice(11, 16)),
+      },
+    };
+  } else if (instruction?.instruction === "syscall") {
+    return {
+      instruction: instruction?.instruction,
+      text: `${instruction?.instruction} ${bin.decimal(
+        binString.slice(6, 26)
+      )}`,
+      regs: {
+        src1: "$" + bin.decimal(binString.slice(6, 11)),
+        src2: String(bin.decimal(binString.slice(6, 26))),
+        dest: "$" + bin.decimal(binString.slice(11, 16)),
+      },
+    };
   } else if (instruction?.instruction === "addi") {
     return {
       instruction: instruction?.instruction,
