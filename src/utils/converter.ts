@@ -126,7 +126,7 @@ export function getInstruction(binString: string) {
         dest: "$" + bin.decimal(binString.slice(16, 21)),
       },
     };
-  } else if (instruction?.instruction === "mfho") {
+  } else if (instruction?.instruction === "mflo") {
     return {
       instruction: instruction?.instruction,
       text: `${instruction?.instruction} $${bin.decimal(

@@ -367,7 +367,7 @@ function Simulator() {
         if (value.regs) {
           localRegs = {
             ...localRegs,
-            [value.regs.dest]: localRegs.hi,
+            [value.regs.dest]: localRegs.$hi,
           };
           let nzr = {};
           Object.keys(localRegs).forEach((key: string) => {
@@ -394,13 +394,9 @@ function Simulator() {
       } else if (value?.instruction === "mflo") {
         let overflow = "";
         if (value.regs) {
-          setRegs({
-            ...localRegs,
-            [value.regs.dest]: localRegs.lo,
-          });
           localRegs = {
             ...localRegs,
-            [value.regs.dest]: localRegs.lo,
+            [value.regs.dest]: localRegs.$lo,
           };
           let nzr = {};
           Object.keys(localRegs).forEach((key: string) => {
@@ -530,8 +526,8 @@ function Simulator() {
         if (value.regs) {
           localRegs = {
             ...localRegs,
-            hi: Number(bin.decimal(mult.slice(0, 31))),
-            lo: Number(bin.decimal(mult.slice(31, mult.length))),
+            $hi: Number(bin.decimal(mult.slice(0, 31))),
+            $lo: Number(bin.decimal(mult.slice(31, mult.length))),
           };
           let nzr = {};
           Object.keys(localRegs).forEach((key: string) => {
@@ -566,8 +562,8 @@ function Simulator() {
         if (value.regs) {
           localRegs = {
             ...localRegs,
-            hi: Number(bin.decimal(mult.slice(0, 31))),
-            lo: Number(bin.decimal(mult.slice(31, mult.length))),
+            $hi: Number(bin.decimal(mult.slice(0, 31))),
+            $lo: Number(bin.decimal(mult.slice(31, mult.length))),
           };
           let nzr = {};
           Object.keys(localRegs).forEach((key: string) => {
@@ -596,10 +592,10 @@ function Simulator() {
         if (value.regs) {
           localRegs = {
             ...localRegs,
-            hi:
+            $hi:
               Number(localRegs[value.regs.src1]) %
               Number(localRegs[value.regs.src2]),
-            lo:
+            $lo:
               Number(localRegs[value.regs.src1]) /
               Number(localRegs[value.regs.src2]),
           };
@@ -630,10 +626,10 @@ function Simulator() {
         if (value.regs) {
           localRegs = {
             ...localRegs,
-            hi:
+            $hi:
               Number(localRegs[value.regs.src1]) %
               Number(localRegs[value.regs.src2]),
-            lo:
+            $lo:
               Number(localRegs[value.regs.src1]) /
               Number(localRegs[value.regs.src2]),
           };
@@ -847,7 +843,7 @@ function Simulator() {
         if (value.regs) {
           localRegs = {
             ...localRegs,
-            pc: Number(localRegs[value.regs.src1]),
+            $pc: Number(localRegs[value.regs.src1]),
           };
           let nzr = {};
           Object.keys(localRegs).forEach((key: string) => {
@@ -1258,7 +1254,6 @@ function Simulator() {
         }
       } else if (value?.instruction === "lb") {
         let overflow = "";
-        let result = 0;
         if (value.regs) {
           if (
             !localMem[
@@ -1304,7 +1299,6 @@ function Simulator() {
         }
       } else if (value?.instruction === "lbu") {
         let overflow = "";
-        let result = 0;
         if (value.regs) {
           if (
             !localMem[
@@ -1350,7 +1344,6 @@ function Simulator() {
         }
       } else if (value?.instruction === "sb") {
         let overflow = "";
-        let result = 0;
         if (value.regs) {
           if (
             !localMem[
@@ -1555,6 +1548,44 @@ function Simulator() {
     fr.readAsText(file);
     fr.onload = () => {
       const value = JSON.parse(fr.result as string);
+      setInstruction([]);
+      setRegs({
+        $0: 0,
+        $1: 0,
+        $2: 0,
+        $3: 0,
+        $4: 0,
+        $5: 0,
+        $6: 0,
+        $7: 0,
+        $8: 0,
+        $9: 0,
+        $10: 0,
+        $11: 0,
+        $12: 0,
+        $13: 0,
+        $14: 0,
+        $15: 0,
+        $16: 0,
+        $17: 0,
+        $18: 0,
+        $19: 0,
+        $20: 0,
+        $21: 0,
+        $22: 0,
+        $23: 0,
+        $24: 0,
+        $25: 0,
+        $26: 0,
+        $27: 0,
+        $28: 268468224,
+        $29: 2147479548,
+        $30: 0,
+        $31: 0,
+        $pc: 4194304,
+        $hi: 0,
+        $lo: 0,
+      });
       setTexts(value);
       setMem({ ...value.data, ["4194304"]: "0" });
     };
